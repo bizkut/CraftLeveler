@@ -3,12 +3,6 @@
 author:  'CraftLeveler'
 version: 1.0.0
 description: Universal 1-100 Crafter & Gatherer Leveling - One Button Solution
-plugin_dependencies:
-- Artisan
-- Lifestream
-- vnavmesh
-- Stylist
-- AutoRetainer
 configs:
   Mode:
     description: Leveling mode - which classes to level
