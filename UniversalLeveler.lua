@@ -2776,10 +2776,10 @@ function DoGatheringCycle()
     
     Log("Gathering cycle for class " .. classId .. " at level " .. level)
     
-    -- Check if GatherBuddyReborn is available
+    -- Check if GatherBuddy is available
     if HasGatherBuddy() then
         -- Use GatherBuddy for automated gathering
-        Log("Using GatherBuddyReborn for gathering")
+        Log("Using GatherBuddy for gathering")
         
         -- Start auto-gather for appropriate level items
         if level >= 90 then
@@ -2799,8 +2799,8 @@ function DoGatheringCycle()
         end
     else
         -- Manual gathering guidance
-        Echo("GatherBuddyReborn not found - manual gathering required")
-        Echo("Install GatherBuddyReborn for automatic gathering")
+        Echo("GatherBuddy not found - manual gathering required")
+        Echo("Install GatherBuddy for automatic gathering")
         StopScript = true
         CurrentState = State.ERROR
     end
