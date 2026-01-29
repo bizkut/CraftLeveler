@@ -2872,6 +2872,8 @@ function Initialize()
     StopScript = false
     
     Log("Initialization complete")
+    Echo("Mode: " .. tostring(Mode) .. ", Target: Lv" .. tostring(TargetLevel))
+    Echo("Classes to level: " .. #ClassesToLevel)
     return true
 end
 
