@@ -2882,25 +2882,23 @@ end
 --#region Main Loop
 
 function GetNextClassToLevel()
-    -- Find next class under target level
-    local startIndex = CurrentClassIndex
+    -- Find the class with the LOWEST level that is still under TargetLevel
+    local lowestClass = nil
+    local lowestLevel = 999
     
-    repeat
-        local class = ClassesToLevel[CurrentClassIndex]
-        if class then
-            local level = GetClassLevel(class.id)
-            if level < TargetLevel then
-                return class
-            end
+    for _, class in ipairs(ClassesToLevel) do
+        local level = GetClassLevel(class.id)
+        if level < TargetLevel and level < lowestLevel then
+            lowestLevel = level
+            lowestClass = class
         end
-        
-        CurrentClassIndex = CurrentClassIndex + 1
-        if CurrentClassIndex > #ClassesToLevel then
-            CurrentClassIndex = 1
-        end
-    until CurrentClassIndex == startIndex
+    end
     
-    return nil -- All classes at target level
+    if lowestClass then
+        Log("Next class to level: " .. lowestClass.name .. " (Lv" .. lowestLevel .. ")")
+    end
+    
+    return lowestClass -- nil if all classes at target
 end
 
 function ProcessState()
