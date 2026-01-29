@@ -2776,33 +2776,83 @@ function DoGatheringCycle()
     
     Log("Gathering cycle for class " .. classId .. " at level " .. level)
     
+    -- Special handling for Fisher
+    if classId == 18 then
+        DoFisherLevelingCycle()
+        return
+    end
+    
     -- Check if GatherBuddy Reborn is available
     if HasGatherBuddy() then
-        -- Use GatherBuddy Reborn for automated gathering
-        Log("Using GatherBuddy Reborn for gathering")
+        -- Find an appropriate item to gather for XP
+        -- We'll check our MaterialRequirements DB for something close to our level
+        local bestItem = nil
+        local bestLevelDiff = 999
         
-        -- Start auto-gather for appropriate level items
-        if level >= 90 then
-            yield("/gatherbuddy collectables on")
+        for id, req in pairs(MaterialRequirements) do
+            for _, mat in ipairs(req) do
+                if mat.gathererClass == classId then
+                    local diff = math.abs(mat.requiredLevel - level)
+                    -- We want item <= currentLevel but close to it
+                    if mat.requiredLevel <= level and diff < bestLevelDiff then
+                        bestLevelDiff = diff
+                        bestItem = mat.itemName
+                    end
+                end
+            end
+        end
+        
+        -- Fallback items if DB is empty for this range
+        if not bestItem then
+            if classId == 16 then bestItem = "Copper Ore" -- MIN default
+            elseif classId == 17 then bestItem = "Latex" -- BTN default
+            end
+        end
+        
+        if bestItem then
+            Log("Using GatherBuddy to gather: " .. bestItem)
+            
+            -- Use our manual gathering loop
+            local startTime = os.clock()
+            local duration = 300 -- 5 minutes per cycle
+            local lastGather = 0
+            
+            while os.clock() - startTime < duration do
+                -- Check for level up
+                if GetClassLevel(classId) > level then
+                    Log("Level up detected!")
+                    break
+                end
+                
+                local isBusy = Svc.Condition[6] or Svc.Condition[45] or Svc.Condition[32]
+                local isMoving = Svc.Condition[70] or (IPC.vnavmesh.PathfindInProgress and IPC.vnavmesh.PathfindInProgress())
+                
+                if not isBusy and not isMoving and (os.clock() - lastGather > 5) then
+                     yield("/gatherbuddy gather \"" .. bestItem .. "\"")
+                     lastGather = os.clock()
+                end
+                
+                -- Check inventory
+                if GetFreeInventorySlots() < MinInventorySlots then
+                    Log("Inventory full, pausing gathering")
+                    CurrentState = State.TURNING_IN
+                    return
+                end
+                
+                Wait(1)
+            end
+            
+            if IPC.vnavmesh.PathfindInProgress() then IPC.vnavmesh.Stop() end
         else
-            yield("/gatherbuddy auto on")
+            Log("Could not find item to level gatherer")
+            Wait(5)
         end
         
-        -- Let it run for a while
-        Wait(60)
-        
-        -- Check inventory
-        if GetFreeInventorySlots() < MinInventorySlots then
-            yield("/gatherbuddy auto off")
-            CurrentState = State.TURNING_IN
-            return
-        end
     else
         -- Manual gathering guidance
         Echo("GatherBuddy Reborn not found - manual gathering required")
         Echo("Install GatherBuddy Reborn for automatic gathering")
-        StopScript = true
-        CurrentState = State.ERROR
+        Wait(10)
     end
 end
 
