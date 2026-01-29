@@ -605,8 +605,9 @@ function GetDistanceToPoint(x, y, z)
 end
 
 function HasPlugin(name)
+    local target = string.lower(name)
     for plugin in luanet.each(Svc.PluginInterface.InstalledPlugins) do
-        if plugin.InternalName == name and plugin.IsLoaded then
+        if string.lower(plugin.InternalName) == target and plugin.IsLoaded then
             return true
         end
     end
