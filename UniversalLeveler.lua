@@ -613,6 +613,10 @@ function HasPlugin(name)
     return false
 end
 
+function HasGatherBuddy()
+    return HasPlugin("GatherBuddy") or HasPlugin("GatherBuddyReborn")
+end
+
 function GetFreeInventorySlots()
     return Inventory.GetFreeInventorySlots() or 0
 end
@@ -1308,7 +1312,7 @@ function DoDiademGathering()
     WaitUntilReady()
     
     -- In Diadem - use GatherBuddy to gather Skybuilders materials
-    if HasPlugin("GatherBuddyReborn") then
+    if HasGatherBuddy() then
         Echo("Gathering in Diadem...")
         yield("/gatherbuddy auto on")
         
@@ -1496,7 +1500,7 @@ function DoMaterialGatheringCycle()
     EnsureBuff(material.gathererClass)
     
     -- Use GatherBuddy to gather the specific item
-    if HasPlugin("GatherBuddyReborn") then
+    if HasGatherBuddy() then
         Log("Using GatherBuddy to gather: " .. material.itemName)
         
         -- Queue the item in GatherBuddy
@@ -1621,7 +1625,7 @@ function DoGathererLevelingCycle()
     -- Use GatherBuddy to level via specific item gathering
     -- (Fixed: No longer uses 'auto on' which requires presets)
     
-    if HasPlugin("GatherBuddyReborn") then
+    if HasGatherBuddy() then
         -- Find an appropriate item to gather for XP
         -- We'll check our MaterialRequirements DB for something close to our level
         local bestItem = nil
@@ -1912,7 +1916,7 @@ function DoGathererLevelingCycle()
     EnsureBuff(gathererClass)
     
     -- Use GatherBuddy to level via collectables or regular gathering
-    if HasPlugin("GatherBuddyReborn") then
+    if HasGatherBuddy() then
         -- At higher levels (50+), use collectables for faster XP
         if currentLevel >= 50 then
             Log("Using collectable gathering for faster XP")
@@ -2779,7 +2783,7 @@ function DoGatheringCycle()
     Log("Gathering cycle for class " .. classId .. " at level " .. level)
     
     -- Check if GatherBuddyReborn is available
-    if HasPlugin("GatherBuddyReborn") then
+    if HasGatherBuddy() then
         -- Use GatherBuddy for automated gathering
         Log("Using GatherBuddyReborn for gathering")
         
