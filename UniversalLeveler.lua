@@ -615,7 +615,7 @@ function HasPlugin(name)
 end
 
 function HasGatherBuddy()
-    return HasPlugin("GatherBuddy") or HasPlugin("GatherBuddyReborn")
+    return HasPlugin("GatherBuddy") or HasPlugin("GatherBuddyReborn") or HasPlugin("GatherBuddy Reborn")
 end
 
 function GetFreeInventorySlots()
