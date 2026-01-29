@@ -1618,49 +1618,65 @@ function DoGathererLevelingCycle()
     -- Ensure buff
     EnsureBuff(gathererClass)
     
-    -- Use GatherBuddy to level via collectables or regular gathering
+    -- Use GatherBuddy to level via specific item gathering
+    -- (Fixed: No longer uses 'auto on' which requires presets)
+    
     if HasPlugin("GatherBuddyReborn") then
-        -- At higher levels (50+), use collectables for faster XP
-        if currentLevel >= 50 then
-            Log("Using collectable gathering for faster XP")
-            yield("/gatherbuddy collectables on")
+        -- Find an appropriate item to gather for XP
+        -- We'll check our MaterialRequirements DB for something close to our level
+        local bestItem = nil
+        local bestLevelDiff = 999
+        
+        for id, req in pairs(MaterialRequirements) do
+            for _, mat in ipairs(req) do
+                if mat.gathererClass == gathererClass then
+                    local diff = math.abs(mat.requiredLevel - currentLevel)
+                    -- We want item <= currentLevel but close to it
+                    if mat.requiredLevel <= currentLevel and diff < bestLevelDiff then
+                        bestLevelDiff = diff
+                        bestItem = mat.itemName
+                    end
+                end
+            end
+        end
+        
+        -- Fallback items if DB is empty for this range
+        if not bestItem then
+            if gathererClass == 16 then bestItem = "Copper Ore" -- MIN default
+            elseif gathererClass == 17 then bestItem = "Latex" -- BTN default
+            end
+        end
+        
+        if bestItem then
+            Log("Leveling gatherer using item: " .. bestItem)
+            
+            -- Use our manual gathering loop
+            local startTime = os.clock()
+            local duration = 300 -- 5 mins
+            local lastGather = 0
+            
+            while os.clock() - startTime < duration do
+                local isBusy = Svc.Condition[6] or Svc.Condition[45] or Svc.Condition[32]
+                local isMoving = Svc.Condition[70] or (IPC.vnavmesh.PathfindInProgress and IPC.vnavmesh.PathfindInProgress())
+                
+                if not isBusy and not isMoving and (os.clock() - lastGather > 5) then
+                     yield("/gatherbuddy gather \"" .. bestItem .. "\"")
+                     lastGather = os.clock()
+                end
+                
+                -- Check for level up
+                if GetClassLevel(gathererClass) > currentLevel then
+                    Log("Level up detected!")
+                    break
+                end
+                
+                Wait(1)
+            end
+            
+            if IPC.vnavmesh.PathfindInProgress() then IPC.vnavmesh.Stop() end
         else
-            Log("Using regular auto-gather")
-            yield("/gatherbuddy auto on")
+            Log("Could not find item to level gatherer")
         end
-        
-        -- Gather for a while (or until level up detected)
-        local startLevel = currentLevel
-        local startTime = os.clock()
-        local gatherDuration = 120  -- 2 minutes per cycle
-        
-        while os.clock() - startTime < gatherDuration do
-            -- Check for level up
-            local newLevel = GetClassLevel(gathererClass)
-            if newLevel > startLevel then
-                Log("Level up! Now level " .. newLevel)
-                break
-            end
-            
-            -- Check inventory
-            if GetFreeInventorySlots() < MinInventorySlots then
-                Log("Inventory getting full during gatherer leveling")
-                -- Do a quick turn-in
-                yield("/gatherbuddy auto off")
-                TurnInCollectables()
-                yield("/gatherbuddy auto on")
-            end
-            
-            Wait(5)
-        end
-        
-        -- Stop gathering
-        yield("/gatherbuddy auto off")
-        yield("/gatherbuddy collectables off")
-        Wait(1)
-        
-        -- Turn in collectables for XP
-        TurnInCollectables()
         
     else
         Echo("GatherBuddyReborn required for auto-leveling!")
@@ -1777,12 +1793,12 @@ function DoFisherLevelingCycle()
         end
     end
     
-    -- 2. Leves (Standard)
-    if UseLeves then
-         if DoLeveQuest(18, level) then
-             return
-         end
-    end
+    -- 2. Leves (Disabled for Fisher due to complexity of dynamic fish ID)
+    -- if UseLeves then
+    --      if DoLeveQuest(18, level) then
+    --          return
+    --      end
+    -- end
     
     -- 3. Grinding fallback (Native)
     Echo("Fisher leveling fallback: Casting line...")
