@@ -14,6 +14,32 @@ Install these via XIVLauncher / Dalamud:
 | **Lifestream** | `https://puni.sh/api/repository/croizat` | Teleportation |
 | **GatherBuddyReborn** | `https://puni.sh/api/repository/croizat` | Gathering automation |
 
+## 🛠️ Recommended Plugin Settings
+
+To ensure the script runs smoothly, please configure your plugins as follows:
+
+### **Artisan**
+- **Endurance**: Enable "Endurance Mode".
+- **Repair**: Enable "Repair items at X% durability" (Script also attempts repair, but Artisan's native repair is safer).
+- **Food/Meds**: Configure your preferred food/manuals if you want Artisan to handle buffs locally (though the script handles this too).
+
+### **GatherBuddyReborn**
+- **Auto-Gather**: Ensure the "Auto-Gather" module is enabled.
+- **Mounts**: Set your preferred mount in GatherBuddy settings for faster travel.
+- **Gear**: Enable "Equip Gear" to ensure you are wearing your best gathering set.
+
+### **AutoRetainer**
+- **Multi-Mode**: Enable "Multi Mode" and ensure "Auto-assign ventures" is checked.
+- **Post-Venture**: Set "After Venture" to "None" or "Reassign" (Retainers will be handled via `/ays multi`).
+
+### **Lifestream**
+- **Navigation**: Enable "Use vnavmesh for navigation" if available.
+- **Aetherytes**: Ensure all major city aetherytes are unlocked on your character.
+
+### **AutoHook (Fisher Only)**
+- **General**: Enable "AutoHook" globally.
+- **Presets**: Download or create a preset for "Ocean Fishing" and "General Leveling" to maximize catch rates.
+
 ## Installation
 
 1. Open XIVLauncher and ensure Dalamud is enabled
