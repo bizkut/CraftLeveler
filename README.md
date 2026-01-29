@@ -38,7 +38,7 @@ To ensure the script runs smoothly, please configure your plugins as follows:
 
 ### **AutoHook (Fisher Only)**
 - **General**: Enable "AutoHook" globally.
-- **Presets**: Download or create a preset for "Ocean Fishing" and "General Leveling" to maximize catch rates.
+- **Presets**: See the [AutoHook Configuration Guide](AutoHook_Guide.md) for detailed leveling presets.
 
 ## Installation
 
