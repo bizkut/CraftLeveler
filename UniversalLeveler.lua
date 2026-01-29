@@ -125,6 +125,8 @@ LEVELING STRATEGY:
 import("System.Numerics")
 
 --#region Configuration
+-- DEBUG: Print loading message immediately
+yield("/echo [DEBUG] Script loading... Config.Get starting")
 Mode                = Config.Get("Mode")
 SingleClass         = Config.Get("SingleClass")
 TargetLevel         = Config.Get("TargetLevel")
@@ -146,6 +148,8 @@ AutoRetrieverMaterials = Config.Get("AutoRetrieverMaterials")
 UseOceanFishing     = Config.Get("UseOceanFishing")
 ItemToBuy           = Config.Get("ItemToBuy")
 --#endregion Configuration
+
+yield("/echo [DEBUG] Config loaded: Mode=" .. tostring(Mode) .. " TargetLevel=" .. tostring(TargetLevel))
 
 --#region Constants
 
