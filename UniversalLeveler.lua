@@ -7,7 +7,6 @@ plugin_dependencies:
 - Artisan
 - Lifestream
 - vnavmesh
-- GatherBuddyReborn
 - Stylist
 - AutoRetainer
 configs:
