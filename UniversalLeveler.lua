@@ -1500,16 +1500,15 @@ function DoMaterialGatheringCycle()
         Log("Using GatherBuddy to gather: " .. material.itemName)
         
         -- Queue the item in GatherBuddy
-        yield("/gatherbuddy gather " .. material.itemName)
-        Wait(2)
+        -- We won't use 'auto on' because it requires a preset list.
+        -- Instead, we spam/monitor the 'gather' command which acts as a ONE-OFF gather.
         
-        -- Enable auto-gather
-        yield("/gatherbuddy auto on")
+        Log("Gathering via command loop (Bypassing Auto-Scheduler)")
         
-        -- Wait until we have enough or timeout
         local startTime = os.clock()
-        local timeout = 300  -- 5 minute timeout per material
+        local timeout = 600  -- 10 minute timeout per material
         local startCount = Inventory.GetItemCount(material.itemName) or 0
+        local lastGatherCommand = 0
         
         while true do
             local currentCount = Inventory.GetItemCount(material.itemName) or 0
@@ -1522,32 +1521,39 @@ function DoMaterialGatheringCycle()
             
             if os.clock() - startTime > timeout then
                 Log("Gathering timeout for " .. material.itemName)
-                Echo("Gathering taking too long, moving on...")
                 break
             end
             
-            -- Check inventory isn't full
-            if GetFreeInventorySlots() < 3 then
-                Log("Inventory nearly full during gathering")
-                -- Stop auto-gather
-                yield("/gatherbuddy auto off")
-                Wait(1)
-                
-                -- Go to dispose/cleanup
-                CurrentState = State.DISPOSING_GEAR
-                return
+            -- Re-issue gather command if we are idle (not gathering, not moving)
+            -- Condition 6: Gathering, 32: Quest, 45: BetweenAreas
+            local isBusy = Svc.Condition[6] or Svc.Condition[45] or Svc.Condition[32]
+            local isMoving = Svc.Condition[70] or (IPC.vnavmesh.PathfindInProgress and IPC.vnavmesh.PathfindInProgress())
+            
+            if not isBusy and not isMoving and (os.clock() - lastGatherCommand > 5) then
+                 Log("Issuing gather command for " .. material.itemName)
+                 yield("/gatherbuddy gather \"" .. material.itemName .. "\"")
+                 lastGatherCommand = os.clock()
             end
             
-            Wait(5)
+            -- Check inventory mostly full
+            if GetFreeInventorySlots() < 3 then
+                Log("Inventory full, pausing gathering")
+                break
+            end
+            
+            Wait(1)
         end
         
-        -- Stop GatherBuddy
-        yield("/gatherbuddy auto off")
+        -- Stop any moving
+        if IPC.vnavmesh.PathfindInProgress() then
+            IPC.vnavmesh.Stop()
+        end
         Wait(1)
         
-        -- Only move to next material if we actually finished (or timed out)
+        -- Check success
         local endCount = Inventory.GetItemCount(material.itemName) or 0
-        if (endCount - startCount) >= material.needed or (os.clock() - startTime > timeout) then
+        if (endCount - startCount) >= material.needed then
+            Log("Gathering complete for " .. material.itemName)
             -- Move to next material
             CurrentMaterialIndex = CurrentMaterialIndex + 1
         end
